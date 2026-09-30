@@ -18,17 +18,28 @@ const handleRes = (res) => {
   return res.data;
 };
 
-export const fetchDashboard = () => api.get('/dashboard').then(handleRes);
-export const fetchContainers = () => api.get('/containers').then(handleRes);
-export const inspectContainer = (containerId) => api.get(`/container/${containerId}/inspect`).then(handleRes);
+// Workload & Engine APIs
+export const fetchDashboard = (envId) => api.get('/dashboard', { params: { environment_id: envId } }).then(handleRes);
+export const fetchContainers = (envId) => api.get('/containers', { params: { environment_id: envId } }).then(handleRes);
+export const inspectContainer = (containerId, envId) => api.get(`/container/${containerId}/inspect`, { params: { environment_id: envId } }).then(handleRes);
 export const deployContainer = (payload) => api.post('/deploy', payload).then(handleRes);
-export const startContainer = (containerId) => api.post('/container/start', { container_id: containerId }).then(handleRes);
-export const stopContainer = (containerId) => api.post('/container/stop', { container_id: containerId }).then(handleRes);
-export const restartContainer = (containerId) => api.post('/container/restart', { container_id: containerId }).then(handleRes);
-export const deleteContainer = (containerId) => api.delete(`/container/${containerId}`).then(handleRes);
-export const fetchLogs = (containerId, tail = 200) => api.get(`/logs/${containerId}?tail=${tail}`).then(handleRes);
-export const fetchStats = (containerId) => api.get(`/stats/${containerId}`).then(handleRes);
-export const fetchResources = () => api.get('/resources').then(handleRes);
-export const runCleanup = () => api.post('/cleanup').then(handleRes);
+export const startContainer = (containerId, envId) => api.post('/container/start', { container_id: containerId, environment_id: envId }).then(handleRes);
+export const stopContainer = (containerId, envId) => api.post('/container/stop', { container_id: containerId, environment_id: envId }).then(handleRes);
+export const restartContainer = (containerId, envId) => api.post('/container/restart', { container_id: containerId, environment_id: envId }).then(handleRes);
+export const deleteContainer = (containerId, envId) => api.delete(`/container/${containerId}`, { params: { environment_id: envId } }).then(handleRes);
+export const fetchLogs = (containerId, tail = 200, envId) => api.get(`/logs/${containerId}?tail=${tail}`, { params: { environment_id: envId } }).then(handleRes);
+export const fetchStats = (containerId, envId) => api.get(`/stats/${containerId}`, { params: { environment_id: envId } }).then(handleRes);
+export const fetchResources = (envId) => api.get('/resources', { params: { environment_id: envId } }).then(handleRes);
+export const runCleanup = (envId) => api.post('/cleanup', null, { params: { environment_id: envId } }).then(handleRes);
+export const fetchProviders = () => api.get('/providers').then(handleRes);
+
+// Projects & Environments APIs
+export const fetchProjects = () => api.get('/projects').then(handleRes);
+export const createProject = (payload) => api.post('/projects', payload).then(handleRes);
+export const getProject = (projectId) => api.get(`/projects/${projectId}`).then(handleRes);
+export const deleteProject = (projectId) => api.delete(`/projects/${projectId}`).then(handleRes);
+export const fetchProjectEnvironments = (projectId) => api.get(`/projects/${projectId}/environments`).then(handleRes);
+export const createEnvironment = (projectId, payload) => api.post(`/projects/${projectId}/environments`, payload).then(handleRes);
+export const deleteEnvironment = (envId) => api.delete(`/environments/${envId}`).then(handleRes);
 
 export default api;

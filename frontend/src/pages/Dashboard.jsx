@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function Dashboard() {
+export default function Dashboard({ activeEnv }) {
   const [data, setData] = useState(null);
   const [containers, setContainers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,8 +25,8 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const [dashRes, contRes] = await Promise.all([
-        fetchDashboard(),
-        fetchContainers()
+        fetchDashboard(activeEnv),
+        fetchContainers(activeEnv)
       ]);
       setData(dashRes);
       setContainers(Array.isArray(contRes) ? contRes : []);
@@ -39,14 +39,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [activeEnv]);
 
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-3">
           <div className="w-12 h-12 border-4 border-devops-cyan border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-mono text-slate-400">Connecting to Docker Engine API...</p>
+          <p className="text-sm font-mono text-slate-400">Connecting to OpsPilot Engine API...</p>
         </div>
       </div>
     );
@@ -54,30 +54,41 @@ export default function Dashboard() {
 
   const engine = data?.engine || {};
   const containerStats = data?.containers || {};
+  const environment = data?.environment || {};
   const isDemo = engine.mode === 'DEMO';
 
   return (
     <div className="space-y-6">
-      {/* Engine Status Banner */}
+      {/* Engine & Environment Status Banner */}
       <div className="glass-panel p-6 rounded-2xl border border-slate-800 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
           <div className="p-3.5 rounded-2xl bg-gradient-to-tr from-devops-blue to-devops-cyan text-white shadow-neon-blue">
             <Server className="w-8 h-8" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-white">Docker Engine Operations Center</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-bold text-white">Operations Center</h3>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-devops-cyan/20 text-devops-cyan border border-devops-cyan/30">
+                {environment.name || 'Local Docker Development'}
+              </span>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${isDemo ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
-                {engine.display || (isDemo ? '🟡 Demo Mode' : '🟢 Live Docker Engine')}
+                {engine.display || (isDemo ? '🟡 Demo Mode' : '🟢 Live Engine')}
               </span>
             </div>
             <p className="text-xs text-slate-400 font-mono mt-1">
-              Engine Version: <span className="text-devops-cyan">{engine.version || '28.0.0'}</span> | API v{engine.api || '1.48'} | Storage Driver: <span className="text-slate-300">{engine.storage_driver || 'overlay2'}</span>
+              Provider: <span className="text-devops-cyan uppercase font-bold">{environment.provider_type || 'docker'}</span> | Version: <span className="text-slate-300">{engine.version || '28.0.0'}</span> | API v{engine.api || '1.48'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            to="/projects"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 hover:border-devops-cyan/50 transition-all"
+          >
+            <Layers className="w-4 h-4 text-devops-cyan" />
+            <span>Switch Workspace</span>
+          </Link>
           <Link
             to="/deploy"
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-devops-blue to-devops-cyan text-white font-semibold text-xs shadow-neon-cyan hover:opacity-90 transition-all"
